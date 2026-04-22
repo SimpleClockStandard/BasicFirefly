@@ -12,9 +12,9 @@ That's it. That's the whole product.
 
 The fanciest thing this clock does is expose a 13-byte I2C response. It does not run a web server. It does not do OTA updates. It is not a microcontroller platform. It is a clock. A very disciplined, very paranoid clock that was born at the factory with a set time and has been ticking ever since.
 
-The magic is that 500 of these can be in the same room and every single one of them is ticking on the same millisecond — passively, with zero configuration — because they all trust the same authenticated radio signal from the same factory-provisioned source of truth.
+The magic is that 500 of these can be in the same room and every single one of them is ticking on the same millisecond - passively, with zero configuration - because they all trust the same authenticated radio signal from the same factory-provisioned source of truth.
 
-Think windmill farms in NorCal at night, all pulsing in unison because they're GPS-locked. That's the vibe. Except we can't use GPS indoors (attenuation, multipath, crowding — you're not getting ms accuracy across hundreds of devices that way). So we built our own.
+Think windmill farms in NorCal at night, all pulsing in unison because they're GPS-locked. That's the vibe. Except we can't use GPS indoors (attenuation, multipath, crowding - you're not getting ms accuracy across hundreds of devices that way). So we built our own.
 
 ---
 
