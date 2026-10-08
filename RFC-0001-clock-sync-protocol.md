@@ -18,9 +18,9 @@ Status of This Memo
 Abstract
 
    This document defines the Low-Frequency Radio Time Synchronization
-   Protocol (LFRTS), a lightweight protocol for maintaining
-   millisecond-level time synchronization across a network of embedded
-   battery-backed real-time clock (RTC) devices in GPS-denied
+   Protocol (LFRTS), a lightweight protocol for maintaining time
+   synchronization to within 50 milliseconds across a network of
+   embedded battery-backed real-time clock (RTC) devices in GPS-denied
    environments such as indoor conference spaces. The protocol defines
    device roles, wake-cycle state machines, drift tolerance rules,
    authenticated broadcast behavior, and the I2C interface exposed to
@@ -68,7 +68,7 @@ Table of Contents
 
    The primary design goals are:
 
-   o  Passive, zero-configuration time synchronization to within 1 ms
+   o  Passive, zero-configuration time synchronization to within 50 ms
       across up to 500 simultaneous devices.
 
    o  Graceful degradation: when no Grandfather Clock is reachable, a
@@ -110,8 +110,9 @@ Table of Contents
       A host microcontroller board that physically connects to the
       clock module. I2C MUST always be connected between the clock
       and the parent board. The parent board is responsible for
-      reading the current light show program and BPM downbeat from
-      the clock over I2C in order to drive its own output behavior.
+      reading the current programming slot, BPM, and beat phase from
+      the clock over I2C in order to drive its own programmed output
+      behavior.
       The clock detects parent board presence by the presence of
       3.3 V on the parent board power pin.
 
@@ -134,19 +135,27 @@ Table of Contents
    Beacon Pulse
       A single authenticated radio broadcast transmitted by a
       Grandfather Clock or Step-Grandfather Clock. A beacon pulse
-      contains: a signed Unix timestamp, a light show slot (0-255),
+      contains: a signed Unix timestamp, a programming slot (0-255),
       a BPM value (beats per minute, 8-bit unsigned integer), and a
       Beat Modulus (a prime number used to derive the beat phase).
 
-   Light Show Slot
+   Programming Slot
       An 8-bit unsigned integer in the range [0, 255] identifying
-      one of 256 pre-defined synchronized light patterns. Slot 0 is
-      the default (no active show). Slots 1-255 are user-defined
-      patterns distributed out-of-band by the operator.
+      one of 256 pre-defined synchronized output programs. Slot 0 is
+      the default (no active program). Slots 1-255 are operator-
+      defined programs distributed out-of-band by the operator.
+
+   Programming Channel
+      The operator-controlled control channel carried in each beacon
+      pulse -- the Programming Slot, BPM, and Beat Modulus fields --
+      and exposed to the parent board over I2C (Section 7). The
+      channel selects the parent board's output program and tempo.
+      It carries no time authority and does not affect time
+      synchronization.
 
    BPM (Beats Per Minute)
       An 8-bit unsigned integer in the range [1, 255] specifying the
-      tempo of the active light show. A value of 0 is reserved and
+      tempo of the active program. A value of 0 is reserved and
       MUST be treated as "no beat active" by the receiving device.
 
    Dead State
@@ -255,7 +264,7 @@ Table of Contents
             (GC or Step-GC).
 
    Step 2a. If a beacon is received:
-            i.   Verify the beacon HMAC signature (Section 6). If
+            i.   Verify the beacon authentication tag (Section 6). If
                  verification fails, discard beacon silently.
             ii.  Compute delta = |received_time - local_rtc_time|.
             iii. Apply drift trust rules (Section 5).
@@ -282,7 +291,7 @@ Table of Contents
    Step 1.  Listen for a beacon pulse from a Grandfather Clock.
 
    Step 2a. If a GC beacon is received:
-            i.   Verify the beacon HMAC signature (Section 6). If
+            i.   Verify the beacon authentication tag (Section 6). If
                  verification fails, discard beacon silently and
                  go to Step 2b.
             ii.  IMMEDIATELY cease all broadcasting.
@@ -441,9 +450,9 @@ Table of Contents
 7.  I2C Interface
 
    I2C MUST always be connected between the clock module and the
-   parent board. The parent board requires the light show slot and
-   BPM downbeat from the clock in order to drive its output behavior;
-   there is no substitute for this connection. The parent board is
+   parent board. The parent board requires the programming slot,
+   BPM, and beat phase from the clock in order to drive its output
+   behavior; there is no substitute for this connection. The parent board is
    the I2C master. The clock is the I2C slave. The clock MUST NOT
    initiate I2C transactions.
 
@@ -451,7 +460,7 @@ Table of Contents
    following fields in order:
 
        Field 1: Unix timestamp    (32-bit unsigned integer, seconds)
-       Field 2: Light show slot   (8-bit unsigned integer, 0-255)
+       Field 2: Programming slot (8-bit unsigned integer, 0-255)
        Field 3: BPM               (8-bit unsigned integer, 0-255)
        Field 4: Beat Modulus      (16-bit unsigned integer, prime, 257-65521)
        Field 5: Beat phase        (8-bit unsigned integer, computed
@@ -464,10 +473,10 @@ Table of Contents
 
    Total response size: 13 bytes.
 
-   Light show slot rules:
+   Programming slot rules:
 
-   o  255 slots are available for operator-defined light patterns
-      (slots 1-255). Slot 0 is the default state (no active show)
+   o  255 slots are available for operator-defined output programs
+      (slots 1-255). Slot 0 is the default state (no active program)
       and MUST be set at factory provisioning.
 
    o  If a received slot value is outside the range [0, 255], the
@@ -575,9 +584,9 @@ Table of Contents
       precise second boundary rather than polling on its own timer.
 
    o  A parent board that does not connect the TICK pin MUST poll
-      I2C on its own interval to retrieve updated values. The light
-      show slot and BPM do not change at second granularity, so
-      lower polling rates are acceptable for those fields. The
+      I2C on its own interval to retrieve updated values. The
+      programming slot and BPM do not change at second granularity,
+      so lower polling rates are acceptable for those fields. The
       Unix timestamp and Beat phase SHOULD be polled at least once
       per second to maintain accuracy.
 
@@ -594,8 +603,9 @@ Table of Contents
       explicitly NOT used. The snap is hard and instantaneous.
 
    The LED is driven by the local RTC tick. The parent board's
-   light show behavior (driven by the light show slot via I2C) is
-   a separate concern and is outside the scope of this document.
+   programmed output behavior (driven by the programming slot via
+   I2C) is a separate concern and is outside the scope of this
+   document.
 
 
 9.  Design Constraints and Non-Goals
@@ -606,7 +616,7 @@ Table of Contents
    o  PWM duty-cycle synchronization across devices. (An OPTIONAL
       extension is described in Section 13 for implementations that
       wish to go beyond base compliance.)
-   o  Sub-millisecond accuracy (target is <= 1 ms, not below).
+   o  Sub-50-millisecond accuracy (target is <= 50 ms, not below).
    o  Over-the-air firmware updates.
    o  Mesh routing or multi-hop time relay beyond one Step-GC hop.
    o  Any function other than timekeeping and I2C reporting.
@@ -853,7 +863,7 @@ Authors' Address
    this document.
 
    Because every device in the network converges on the same
-   millisecond-accurate effective time (unix timestamp plus Drift
+   50-millisecond-accurate effective time (unix timestamp plus Drift
    Offset), they share a common sub-second clock reference without
    any additional communication. This makes network-wide PWM duty
    cycle synchronization a purely local computation: each device
