@@ -138,8 +138,9 @@ Table of Contents
       A single authenticated radio broadcast transmitted by a
       Grandfather Clock or Step-Grandfather Clock. A beacon pulse
       contains: a signed Unix timestamp, a programming slot (0-255),
-      a BPM value (beats per minute, 8-bit unsigned integer), and a
-      Beat Modulus (a prime number used to derive the beat phase).
+      a BPM value (beats per minute, 8-bit unsigned integer), a
+      Beat Modulus (a prime number used to derive the beat phase),
+      and an alert byte (see Alert Byte).
 
    Programming Slot
       An 8-bit unsigned integer in the range [0, 255] identifying
@@ -154,6 +155,25 @@ Table of Contents
       channel selects the parent board's output program and tempo.
       It carries no time authority and does not affect time
       synchronization.
+
+   Alert Byte
+      An 8-bit unsigned integer carried in each beacon pulse and
+      exposed to the parent board over I2C (Section 7, Field 8).
+      It signals an emergency alert using the same alert types
+      delivered to cell phones via LTE SIB12 (CMAS/WEA). A value
+      of 0 means no alert is active. Values 1-6 identify the alert
+      type:
+
+         1 = Presidential / National alert (WEA message ID 4370)
+         2 = Extreme threat to life or property (WEA 4371-4372)
+         3 = Severe threat to life or property (WEA 4373-4378)
+         4 = AMBER / child abduction emergency (WEA 4379)
+         5 = Public safety message (WEA 4397)
+         6 = Test alert
+
+      Values 7-255 are reserved and MUST NOT be used. The alert
+      byte carries no time authority; how the parent board presents
+      an alert is outside the scope of this standard.
 
    BPM (Beats Per Minute)
       An 8-bit unsigned integer in the range [1, 255] specifying the
@@ -472,8 +492,10 @@ Table of Contents
                                    bit 0: sync  (0 = unsynced, 1 = synced)
                                    bit 1: dead  (0 = alive,   1 = dead)
                                    bits 2-7: reserved, MUST be 0
+       Field 8: Alert             (8-bit unsigned integer, 0-6;
+                                   see Alert Byte)
 
-   Total response size: 13 bytes.
+   Total response size: 14 bytes.
 
    Programming slot rules:
 
@@ -511,6 +533,29 @@ Table of Contents
       Beat phase MUST NOT be stored; it is always derived.
 
    o  At factory provisioning, Beat Modulus MUST default to 2.
+
+   Alert byte rules:
+
+   o  A value of 0 means no alert is active. At factory
+      provisioning, the alert byte MUST be initialized to 0.
+
+   o  Values 1-6 identify the alert type per the Alert Byte
+      definition (Section 2), mirroring the WEA alert types
+      delivered to cell phones via LTE SIB12.
+
+   o  On receipt of a valid beacon pulse, the device MUST store
+      the beacon's alert byte and report it in Field 8. A beacon
+      carrying an alert byte of 0 clears any previously stored
+      alert.
+
+   o  If a received alert byte is in the reserved range [7, 255],
+      the device MUST discard it and retain the last valid value.
+
+   o  The alert byte MUST NOT affect time synchronization,
+      drift trust evaluation, or role behavior. Alert presentation
+      (indicators, messaging, or any other output) is the parent
+      board's responsibility and is outside the scope of this
+      standard.
 
    Drift Offset rules:
 
