@@ -24,9 +24,9 @@ Abstract
    battery-backed real-time clock (RTC) devices in GPS-denied
    environments such as indoor conference spaces. The standard
    defines device roles, wake-cycle state machines, drift tolerance
-   rules,
-   authenticated broadcast behavior, and the I2C interface exposed to
-   host (parent) boards.
+   rules, authenticated broadcast behavior, Grandfather Clock LTE
+   alert mirroring, and the I2C interface exposed to host (parent)
+   boards.
 
 Table of Contents
 
@@ -174,6 +174,13 @@ Table of Contents
       Values 7-255 are reserved and MUST NOT be used. The alert
       byte carries no time authority; how the parent board presents
       an alert is outside the scope of this standard.
+
+   LTE Mirror
+      An LTE data transmission originated by a Grandfather Clock
+      that mirrors the Grandfather Clock's current alert state:
+      the Alert Byte value and the current Unix timestamp. Only
+      Grandfather Clocks may originate LTE Mirror transmissions.
+      Every transmission MUST be authenticated per Section 4.4.
 
    BPM (Beats Per Minute)
       An 8-bit unsigned integer in the range [1, 255] specifying the
@@ -366,6 +373,34 @@ Table of Contents
    Grandfather Clocks or NAClocks. Peer GC beacons are the only
    external source a Grandfather Clock is permitted to trust for
    time correction. A Grandfather Clock MUST NOT demote itself.
+
+   LTE mirror transmission:
+
+   o  On each wake cycle, a Grandfather Clock MUST transmit its
+      current alert state -- the Alert Byte value and the current
+      Unix timestamp -- over LTE as an LTE Mirror transmission.
+
+   o  Each LTE Mirror transmission MUST be authenticated using
+      HMAC-SHA-256 at minimum, or a stronger scheme, consistent
+      with the requirements of Section 6.
+
+   o  Authentication MUST use a Grandfather-Clock-only credential
+      provisioned at the factory (e.g., a dedicated HMAC key
+      issued exclusively to Grandfather Clocks, or an ECDSA
+      signature verifiable against the manufacturer trust
+      anchor). The shared beacon authentication key MUST NOT be
+      reused for LTE Mirror transmissions: it is held by every
+      device and therefore cannot prove Grandfather Clock origin.
+
+   o  Only Grandfather Clocks may originate LTE Mirror
+      transmissions. A receiver MUST verify the authentication
+      tag before acting on any field in the transmission. A
+      transmission that fails verification MUST be silently
+      discarded.
+
+   o  The LTE Mirror transmission MUST NOT alter the beacon pulse
+      contents, time synchronization, drift trust evaluation, or
+      role behavior. It is a one-way mirror of the alert state.
 
 
 4.5.  Dead State
@@ -693,6 +728,13 @@ Table of Contents
    An unauthenticated attacker with physical access MUST NOT be able
    to read flash contents, inject firmware, or extract key material
    via these interfaces.
+
+   LTE Mirror transmissions (Section 4.4) MUST be authenticated
+   with a Grandfather-Clock-only credential. The shared beacon
+   authentication key is held by every device and MUST NOT be
+   reused for LTE Mirror authentication, as it cannot prove
+   Grandfather Clock origin. A forged LTE Mirror transmission
+   MUST be silently discarded by receivers.
 
 
 11. IANA Considerations
