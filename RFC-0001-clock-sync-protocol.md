@@ -4,25 +4,27 @@ Request for Comments: 0001                          Smarter Clock Standard
 Category: Standards Track                                  April 2026
 
 
-        Low-Frequency Radio Time Synchronization Protocol for
-                  Distributed Embedded Clock Networks
-                            (LFRTS/1.0)
+                     The Smarter Clock Standard
+          Low-Frequency Radio Time Synchronization for
+               Distributed Embedded Clock Networks
+                            (SCS/1.0)
 
 
 Status of This Memo
 
-   This document specifies a protocol for the Smarter Clock Standard
-   project and requests discussion and suggestions for improvement.
+   This document specifies the Smarter Clock Standard and requests
+   discussion and suggestions for improvement.
    Distribution of this memo is unlimited.
 
 Abstract
 
-   This document defines the Low-Frequency Radio Time Synchronization
-   Protocol (LFRTS), a lightweight protocol for maintaining time
-   synchronization to within 50 milliseconds across a network of
-   embedded battery-backed real-time clock (RTC) devices in GPS-denied
-   environments such as indoor conference spaces. The protocol defines
-   device roles, wake-cycle state machines, drift tolerance rules,
+   This document defines the Smarter Clock Standard (SCS), a
+   lightweight standard for maintaining time synchronization to
+   within 50 milliseconds across a network of embedded
+   battery-backed real-time clock (RTC) devices in GPS-denied
+   environments such as indoor conference spaces. The standard
+   defines device roles, wake-cycle state machines, drift tolerance
+   rules,
    authenticated broadcast behavior, and the I2C interface exposed to
    host (parent) boards.
 
@@ -60,7 +62,7 @@ Table of Contents
    GPS-based time synchronization achieves millisecond accuracy across
    large outdoor deployments but is unreliable in dense indoor
    environments due to signal attenuation and multipath latency.
-   This protocol addresses that gap by establishing a low-frequency
+   This standard addresses that gap by establishing a low-frequency
    radio beacon hierarchy in which one or more factory-authorized
    Grandfather Clocks broadcast authenticated time signals, and
    Non-Authoritative Clocks (NAClocks) discipline their RTCs against
@@ -610,7 +612,7 @@ Table of Contents
 
 9.  Design Constraints and Non-Goals
 
-   This protocol is intentionally minimal. The following are
+   This standard is intentionally minimal. The following are
    explicitly OUT OF SCOPE for version 1.0 base compliance:
 
    o  PWM duty-cycle synchronization across devices. (An OPTIONAL
@@ -706,7 +708,7 @@ Table of Contents
 
    o  Write the current Unix timestamp directly to the RTC time
       registers via the Birth Pads, using the RTC chip's native
-      serial protocol.
+      serial interface.
 
    o  Read back the written value immediately after writing and
       verify it matches the intended time within an acceptable
@@ -835,7 +837,7 @@ Table of Contents
    calendar representation of pi achievable at one-second
    granularity.
 
-   o  This alarm has no defined protocol behavior. It is purely
+   o  This alarm has no behavior defined by this standard. It is purely
       celebratory. The MCU MAY handle the alarm interrupt in any
       way it sees fit, or ignore it entirely.
 
@@ -858,7 +860,7 @@ Authors' Address
 13. Bonus Round: Synchronized PWM LED Duty Cycle
 
    Non-normative. Devices that implement this section are not
-   required to do so for base protocol compliance. Nothing in this
+   required to do so for base standard compliance. Nothing in this
    section modifies any MUST or MUST NOT requirement elsewhere in
    this document.
 
