@@ -1,6 +1,6 @@
 ```
 Network Working Group                                        A. Wietting
-Request for Comments: 0001                          Smarter Clock Standard
+Request for Comments: XXXX                          Smarter Clock Standard
 Category: Standards Track                                  April 2026
 
 

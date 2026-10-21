@@ -133,7 +133,7 @@ Section 13 of the RFC describes synchronized PWM duty cycle across devices using
 ## Repo Structure
 
 ```
-RFC-0001-clock-sync-protocol.md   ← The full protocol spec (LFRTS/1.0)
+RFC-XXXX-clock-sync-protocol.md   ← The full protocol spec (LFRTS/1.0)
 clock_outline.md                  ← Original design outline / working notes
 datasheets/
   cc1352r/
