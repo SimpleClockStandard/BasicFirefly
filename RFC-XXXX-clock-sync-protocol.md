@@ -19,7 +19,7 @@ Abstract
 
    This document defines the Low-Frequency Radio Time Synchronization
    Protocol (LFRTS), a lightweight protocol for maintaining
-   millisecond-level time synchronization across a network of embedded
+   time synchronization to within 50 milliseconds across a network of embedded
    battery-backed real-time clock (RTC) devices in GPS-denied
    environments such as indoor conference spaces. The protocol defines
    device roles, wake-cycle state machines, drift tolerance rules,
@@ -68,7 +68,7 @@ Table of Contents
 
    The primary design goals are:
 
-   o  Passive, zero-configuration time synchronization to within 1 ms
+   o  Passive, zero-configuration time synchronization to within 50 ms (imperceptible to the human eye)
       across up to 500 simultaneous devices.
 
    o  Graceful degradation: when no Grandfather Clock is reachable, a
@@ -606,7 +606,7 @@ Table of Contents
    o  PWM duty-cycle synchronization across devices. (An OPTIONAL
       extension is described in Section 13 for implementations that
       wish to go beyond base compliance.)
-   o  Sub-millisecond accuracy (target is <= 1 ms, not below).
+   o  Sub-50-millisecond accuracy (target is <= 50 ms, not below).
    o  Over-the-air firmware updates.
    o  Mesh routing or multi-hop time relay beyond one Step-GC hop.
    o  Any function other than timekeeping and I2C reporting.
@@ -853,7 +853,7 @@ Authors' Address
    this document.
 
    Because every device in the network converges on the same
-   millisecond-accurate effective time (unix timestamp plus Drift
+   50-millisecond-accurate effective time (unix timestamp plus Drift
    Offset), they share a common sub-second clock reference without
    any additional communication. This makes network-wide PWM duty
    cycle synchronization a purely local computation: each device
