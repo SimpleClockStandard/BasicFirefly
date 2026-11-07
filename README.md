@@ -6,7 +6,7 @@
 
 ## What is this thing
 
-It's a clock. A really good one. 2 cm × 2 cm, backup battery, and one job: **keep accurate time to within 1 ms and tell its parent board about it over I2C**.
+It's a clock. A really good one. 2 cm × 2 cm, backup battery, and one job: **keep accurate time to within 50 ms and tell its parent board about it over I2C**.
 
 That's it. That's the whole product.
 
